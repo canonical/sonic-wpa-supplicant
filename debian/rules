@@ -15,11 +15,16 @@ DEB_CFLAGS_MAINT_APPEND   = -MMD -Wall $(shell dpkg-buildflags --get CPPFLAGS) -
                                       -Wno-deprecated-declarations $(warning WARNING: Building with -Wno-deprecated-declarations) \
                                       -Wno-use-after-free $(warning WARNING: Building with -Wno-use-after-free)       \
                                       -Wno-discarded-qualifiers $(warning WARNING: Building with -Wno-discarded-qualifiers)
+# resolute slave buildflags.conf appends -std=gnu17 to CFLAGS globally. wpa_supplicant's
+# build.rules compiles .cpp sources with $(CC) $(CFLAGS), so -std=gnu17 (a C standard)
+# leaks into C++ compilation and fails: "command-line option '-std=gnu17' is valid for
+# C/ObjC but not for C++". Strip it; wpa_supplicant is C and does not need gnu17.
+DEB_CFLAGS_MAINT_STRIP    = -std=gnu17
 DEB_CXXFLAGS_MAINT_APPEND = $(shell dpkg-buildflags --get CPPFLAGS)
 DEB_LDFLAGS_MAINT_APPEND  = -Wl,--as-needed
 export DEB_CFLAGS_MAINT_APPEND DEB_CXXFLAGS_MAINT_APPEND DEB_LDFLAGS_MAINT_APPEND
 
-UCFLAGS   = -MMD -Wall -fPIC $(shell dpkg-buildflags --get CPPFLAGS) $(shell dpkg-buildflags --get CFLAGS)
+UCFLAGS   = -MMD -Wall -fPIC $(shell dpkg-buildflags --get CPPFLAGS) $(filter-out -std=gnu17,$(shell dpkg-buildflags --get CFLAGS))
 
 BINDIR    = /sbin
 V = 1
@@ -56,7 +61,7 @@ ifeq (,$(filter noudeb,$(DEB_BUILD_PROFILES)))
 endif
 	# build wpasupplicant, libwpa_client and eapol_test
 	cp -v --remove-destination $(WPASUPPLICANT_DOT_CONFIG) wpa_supplicant/.config
-	dh_auto_build --sourcedirectory=wpa_supplicant \
+	CFLAGS="$(UCFLAGS)" dh_auto_build --sourcedirectory=wpa_supplicant \
 	              --buildsystem=makefile -- all libwpa_client.a eapol_test
 ifeq (,$(filter pkg.wpa.nogui,$(DEB_BUILD_PROFILES)))
 	# build wpa_gui-qt4
