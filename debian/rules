@@ -15,10 +15,8 @@ DEB_CFLAGS_MAINT_APPEND   = -MMD -Wall $(shell dpkg-buildflags --get CPPFLAGS) -
                                       -Wno-deprecated-declarations $(warning WARNING: Building with -Wno-deprecated-declarations) \
                                       -Wno-use-after-free $(warning WARNING: Building with -Wno-use-after-free)       \
                                       -Wno-discarded-qualifiers $(warning WARNING: Building with -Wno-discarded-qualifiers)
-# resolute slave buildflags.conf appends -std=gnu17 to CFLAGS globally. wpa_supplicant's
-# build.rules compiles .cpp sources with $(CC) $(CFLAGS), so -std=gnu17 (a C standard)
-# leaks into C++ compilation and fails: "command-line option '-std=gnu17' is valid for
-# C/ObjC but not for C++". Strip it; wpa_supplicant is C and does not need gnu17.
+# resolute buildflags.conf adds -std=gnu17 to CFLAGS globally; wpa build.rules compiles
+# .cpp with $(CC) $(CFLAGS), so strip the C-only flag (invalid for C++).
 DEB_CFLAGS_MAINT_STRIP    = -std=gnu17
 DEB_CXXFLAGS_MAINT_APPEND = $(shell dpkg-buildflags --get CPPFLAGS)
 DEB_LDFLAGS_MAINT_APPEND  = -Wl,--as-needed
