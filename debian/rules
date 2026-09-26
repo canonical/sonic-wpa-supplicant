@@ -24,7 +24,7 @@ export DEB_CFLAGS_MAINT_APPEND DEB_CXXFLAGS_MAINT_APPEND DEB_LDFLAGS_MAINT_APPEN
 
 UCFLAGS   = -MMD -Wall -fPIC $(shell dpkg-buildflags --get CPPFLAGS) $(filter-out -std=gnu17,$(shell dpkg-buildflags --get CFLAGS))
 
-BINDIR    = /sbin
+BINDIR    = /usr/sbin
 V = 1
 
 PKG_CONFIG ?= $(DEB_HOST_GNU_TYPE)-pkg-config
@@ -104,7 +104,7 @@ override_dh_install:
 ifeq (,$(filter noudeb,$(DEB_BUILD_PROFILES)))
 	# Install udeb
 	install --mode=755 -D wpa_supplicant/wpa_supplicant-udeb \
-		debian/wpasupplicant-udeb/sbin/wpa_supplicant
+		debian/wpasupplicant-udeb/usr/sbin/wpa_supplicant
 endif
 
 override_dh_installchangelogs:
